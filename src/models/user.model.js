@@ -82,6 +82,19 @@ const userSchema = new mongoose.Schema({
   },
   skills: {
     type: [String],
+  },
+  publicVisibility: {
+    type: String,
+    enum: ["PUBLIC","PRIVATE"],
+    default: "PUBLIC"
+  },
+  blockedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'User'
+  }],
+  isActive: {
+    type: Boolean,
+    default: true
   }
 },{
   timestamps:true

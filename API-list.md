@@ -10,12 +10,12 @@
 
 
 USER
-POST  /api/auth/register 
-POST  /api/auth/login
-POST  /api/auth/logout
-GET  /api/auth/me
+POST  /api/auth/register  ✅
+POST  /api/auth/login ✅
+POST  /api/auth/logout ✅
+GET  /api/auth/me ✅
 
-GET  /api/users/me
+GET  /api/users/me ✅
 GET /api/users/:id
 PACTH /api/users/update
 

@@ -103,26 +103,21 @@ async function logoutController(req, res) {
   }
 }
 
-async function getProfileController(req,res){
-  try {
-    // ✅ CHANGED: Use req.user instead of res.user
-    const loggedInUser = await User.findById(req.user._id).select("-password"); 
-
-    if (!loggedInUser)
-      return res.status(404).json({ message: "User not found" });
-
-    return res.json({
-      message: "Fetch user successfully",
-      user: loggedInUser,
-    });
-  }catch(err){
-     res.status(401).json({message: err.message})
-  }
+async function getLoggedInUserController (req,res) {
+    try {
+        const user = req.user;
+        
+        return res.status(201).json({message: "Fetch logged-In user successfully",user})
+    } catch (error) {
+        res.status(401).json({message: err.message})
+    }
 }
+
+
 
 module.exports = {
   signupController,
   loginController,
   logoutController,
-  getProfileController
+  getLoggedInUserController
 };
