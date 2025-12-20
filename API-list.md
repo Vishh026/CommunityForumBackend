@@ -1,3 +1,14 @@
+<!-- async function getProfileController(req,res){
+  try{
+
+  }catch(err){
+     res.status(401).json({message: err.message})
+  }
+} -->
+
+
+
+
 USER
 POST  /api/auth/register 
 POST  /api/auth/login

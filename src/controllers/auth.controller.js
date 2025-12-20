@@ -3,10 +3,11 @@ const { validatingSignupData } = require("../Utilities/ValidateData");
 const validator = require("validator");
 const {
   comparePassword,
-  generateRefreshToken,
   generateAccessToken,
   hashPassword,
 } = require("../Utilities/helperFunctions");
+
+
 
 async function loginController(req, res) {
   try {
@@ -28,22 +29,21 @@ async function loginController(req, res) {
     if (!isPasswordValid)
       return res.status(400).json({ message: "Invalid Credentials" });
 
-    const accessToken = await generateAccessToken(user._id);
+    const token = await generateAccessToken({
+      _id: user._id,
+      role: user.role
+    });
 
-    if (!accessToken) return res.status(401).send("Invalid credentials");
-
-    // refreshToken
-    const refreshToken = await generateRefreshToken(user._id);
-    res.cookie("Token", refreshToken, {
+    res.cookie("token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      max: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res
       .status(201)
-      .json({ message: "User login successfully!!", token: accessToken });
+      .json({ message: "User login successfully!!" , user: { _id: user._id, role: user.role }});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -67,7 +67,7 @@ async function signupController(req, res) {
     const hashedPassword = await hashPassword(password);
 
     const allowedRole = ["user", "admin"];
-    if (!allowedRole.includes(role)) role = "user";
+    if (!allowedRole.includes(role)) role = "user"; 
 
     const newUser = new User({
       firstName,
@@ -91,21 +91,9 @@ async function signupController(req, res) {
 
 async function logoutController(req, res) {
   try{
-    const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken)
-    return res.status(201).json({ message: "User logout successfully" });
-
-  const user = await User.findOne({ refreshToken });
-  if (!user)
-    return res.status(201).json({ message: "User logout successfully" });
-
-  user.refreshToken = null;
-  await user.save();
-
-  res.clearCookie("Token", {
+  res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
     sameSite: "strict",
   });
 
@@ -115,8 +103,26 @@ async function logoutController(req, res) {
   }
 }
 
+async function getProfileController(req,res){
+  try {
+    // ✅ CHANGED: Use req.user instead of res.user
+    const loggedInUser = await User.findById(req.user._id).select("-password"); 
+
+    if (!loggedInUser)
+      return res.status(404).json({ message: "User not found" });
+
+    return res.json({
+      message: "Fetch user successfully",
+      user: loggedInUser,
+    });
+  }catch(err){
+     res.status(401).json({message: err.message})
+  }
+}
+
 module.exports = {
   signupController,
   loginController,
   logoutController,
+  getProfileController
 };

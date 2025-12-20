@@ -82,10 +82,6 @@ const userSchema = new mongoose.Schema({
   },
   skills: {
     type: [String],
-  },
-  refreshToken : {
-    type: String,
-    default: null
   }
 },{
   timestamps:true

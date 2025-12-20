@@ -13,14 +13,9 @@ function isValidGithubUrl(url) {
   return url.startsWith("https://github.com/");
 }
 
-async function generateRefreshToken(id) {
-  return jwt.sign({ _id: id }, process.env.REFRESH_TOKEN_SECRETE, {
-    expiresIn: "1h",
-  });
-}
 
-async function generateAccessToken(id) {
-  return jwt.sign({ _id: id }, process.env.ACCESS_TOKEN_SECRETE, {
+async function generateAccessToken(_id,role) {
+  return jwt.sign({ _id: _id,role: role  }, process.env.ACCESS_TOKEN_SECRETE, {
     expiresIn: "1h",
   });
 }
@@ -39,5 +34,4 @@ module.exports = {
   comparePassword,
   hashPassword,
   generateAccessToken,
-  generateRefreshToken,
 };
