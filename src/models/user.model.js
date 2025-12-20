@@ -83,7 +83,14 @@ const userSchema = new mongoose.Schema({
   skills: {
     type: [String],
   },
-});
+  refreshToken : {
+    type: String,
+    default: null
+  }
+},{
+  timestamps:true
+}
+);
 
 const User = mongoose.model("User", userSchema);
 

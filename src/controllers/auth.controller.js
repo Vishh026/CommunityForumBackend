@@ -1,77 +1,90 @@
 const User = require("../models/user.model");
-const jwt = require("jsonwebtoken");
 const { validatingSignupData } = require("../Utilities/ValidateData");
-const bcrypt = require("bcrypt");
 const validator = require("validator");
+const {
+  comparePassword,
+  generateRefreshToken,
+  generateAccessToken,
+  hashPassword,
+} = require("../Utilities/helperFunctions");
 
 async function loginController(req, res) {
   try {
-    // check email or password enteres??
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email or Password missing" });
     }
+
     if (!validator.isEmail(email))
-      return res.status(400).json({ message: "Invalid email" });
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid)
       return res.status(400).json({ message: "Invalid Credentials" });
 
-    const token = await jwt.sign({ _id: user.id }, process.env.SECRETE_KEY, {
-      expiresIn: "7d",
-    });
-    if (!token) return res.status(401).send("Invalid Token");
+    const accessToken = await generateAccessToken(user._id);
 
-    res.cookie("Token", token, {
+    if (!accessToken) return res.status(401).send("Invalid credentials");
+
+    // refreshToken
+    const refreshToken = await generateRefreshToken(user._id);
+    res.cookie("Token", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
+      max: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(201).json({ message: "User login successfully!!" });
+    return res
+      .status(201)
+      .json({ message: "User login successfully!!", token: accessToken });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: err.message });
   }
 }
 
 async function signupController(req, res) {
   try {
     const user = req.body;
-    const { firstName, lastName, email, password, avtar, userName,role } = user;
+    const { firstName, lastName, email, password, avtar, userName, role } =
+      user;
 
     const error = validatingSignupData(user);
     if (error) {
       return res.status(400).json({ success: false, error });
     }
-    const existingUser = await User.findOne({email})
-    if(existingUser) return res.status(400).json({message: "User alredy exists"})
 
-    const hashPassword = await bcrypt.hash(password, 10);
+    const existingUser = await User.findOne({ email });
+    if (existingUser)
+      return res.status(400).json({ message: "User alredy exists" });
+
+    const hashedPassword = await hashPassword(password);
+    
+
+    const allowedRole = ["user", "admin"];
+    if (!allowedRole.includes(role)) role = "user";
 
     const newUser = new User({
       firstName,
       lastName,
       role: role || "user",
-      email,
+      email: email.toLowerCase(),
       avtar,
       userName,
-      password: hashPassword,
+      password: hashedPassword,
     });
 
     await newUser.save();
 
-    return res
-      .status(201)
-      .json({
-        message: `${user.firstName + " " + user.lastName} register sucessfully`,
-      });
+    return res.status(201).json({
+      message: `${user.firstName + " " + user.lastName} register sucessfully`,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
