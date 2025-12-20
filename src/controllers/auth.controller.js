@@ -65,7 +65,6 @@ async function signupController(req, res) {
       return res.status(400).json({ message: "User alredy exists" });
 
     const hashedPassword = await hashPassword(password);
-    
 
     const allowedRole = ["user", "admin"];
     if (!allowedRole.includes(role)) role = "user";
@@ -90,7 +89,34 @@ async function signupController(req, res) {
   }
 }
 
+async function logoutController(req, res) {
+  try{
+    const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken)
+    return res.status(201).json({ message: "User logout successfully" });
+
+  const user = await User.findOne({ refreshToken });
+  if (!user)
+    return res.status(201).json({ message: "User logout successfully" });
+
+  user.refreshToken = null;
+  await user.save();
+
+  res.clearCookie("Token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+
+  return res.status(200).json({ message: "Logged out successfully" });
+  }catch(err){
+    res.status(401).json({message: err.message})
+  }
+}
+
 module.exports = {
   signupController,
   loginController,
+  logoutController,
 };
