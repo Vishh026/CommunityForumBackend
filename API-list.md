@@ -9,7 +9,7 @@ GET  /api/auth/me ✅
 # Loggedin user
 GET  /api/users/me ✅
 GET /api/users/:id
-PACTH /api/users/update =================================================
+PACTH /api/users/update ✅
 
 
 

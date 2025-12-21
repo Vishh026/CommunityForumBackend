@@ -95,7 +95,16 @@ const validateUpdateProfile = (req) => {
   return isUpdateAllowed
 };
 
+// Utilities/sanitizeUser.js
+const sanitizeUser = (user) => {
+  if (!user) return null;
+  const { firstName, lastName, userName, avatar, bio, headline, skills, publicVisibility, githubUrl, linkedinUrl } = user;
+  return { firstName, lastName, userName, avatar, bio, headline, skills, publicVisibility, githubUrl, linkedinUrl };
+}
+
+
 module.exports = {
   validatingSignupData,
-  validateUpdateProfile
+  validateUpdateProfile,
+  sanitizeUser
 };

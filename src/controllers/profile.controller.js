@@ -1,16 +1,16 @@
 const User = require("../models/user.model");
-const { validateUpdateProfile } = require("../Utilities/ValidateData");
+const { validateUpdateProfile, sanitizeUser } = require("../Utilities/ValidateData");
 
 async function getMyProfile(req, res) {
   try {
-    const loggedInUser = await User.findById(req.user._id).select("-password");
+   const loggedInUser = await User.findById(_id)
 
     if (!loggedInUser)
       return res.status(404).json({ message: "User not found" });
 
     return res.json({
       message: "Fetch user successfully",
-      user: loggedInUser,
+      user: sanitizeUser(loggedInUser),
     });
   } catch (err) {
     res.status(401).json({ message: err.message });
@@ -21,12 +21,12 @@ async function updateMyProfile(req,res){
   try{
     // get the loggedin user
     const {_id} = req.user
-    const loggedInUser = await User.findById(_id).select("-email -password -isActive -blockedUsers -createdAt -updatedAt -__v");
+    const loggedInUser = await User.findById(_id)
 
     if(!loggedInUser) return res.status(404).json({message:"user not found"})
 
-    if(!validateUpdateProfile(req)){
-      return res.status(400).json({message:"Updates are not allowed"})
+    if(!validateUpdateProfile(req) || Object.keys(req.body).length === 0){
+      return res.status(400).json({message:"Invalid or empty update"})
     }
 
     Object.keys(req.body).forEach((key) => loggedInUser[key] = req.body[key])
@@ -35,15 +35,43 @@ async function updateMyProfile(req,res){
 
     res.status(201).json({
       mesasge: `${loggedInUser.firstName + " " + loggedInUser.lastName}'s profile updated successfully`,
-      loggedInUser
+      user: sanitizeUser(loggedInUser)
     })
   }catch(err){
     res.status(401).json({ message: err.message });
   }
 }
 
+async function fetchUserProfile(req,res){
+  try{
+
+    const requestedUserId = req.params.userid;
+
+    if(!requestedUserId) return res.status(403).json({message: "Invalid User id"})
+
+    const requestedUser = await User.findById(requestedUserId)
+    if(!requestedUser) 
+      return res.status(404).json({message: "user not found"})
+
+    if(requestedUser.blockedUsers.includes(req.user._id))
+      return res.status(404).json({message: "User not found"})
+
+
+    return res.status(201).json({
+      message: `fetch ${requestedUser.firstName}'s profile successfully`,
+      requestedUser
+    })
+    // get the id from req.params 
+    // check use present or not in the db
+    // if user present => gives his data
+
+  }catch(err){
+    res.status(400).json({mesasge: err.message})
+  }
+}
+
 
 
 module.exports = {
-  getMyProfile,updateMyProfile
+  getMyProfile,updateMyProfile,fetchUserProfile
 };
