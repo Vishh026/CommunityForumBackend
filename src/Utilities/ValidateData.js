@@ -11,14 +11,22 @@ const validatingSignupData = (data) => {
     bio,
     skills = [],
     headline,
-    avtar,
+    profileURL,
     userName,
     githubUrl,
     linkedinUrl,
   } = data;
 
   // Required fields
-  if (!firstName || !lastName || !role || !email || !password || !avtar || !userName) {
+  if (
+    !firstName ||
+    !lastName ||
+    !role ||
+    !email ||
+    !password ||
+    !profileURL ||
+    !userName
+  ) {
     return { field: "required", message: "Required fields are missing" };
   }
 
@@ -32,10 +40,9 @@ const validatingSignupData = (data) => {
     return { field: "password", message: "Password is too weak" };
   }
 
-
-  // Avatar URL check
-  if (!validator.isURL(avtar)) {
-    return { field: "avtar", message: "URL is not valid" };
+  // profileURL URL check
+  if (!validator.isURL(profileURL)) {
+    return { field: "profileURL", message: "URL is not valid" };
   }
 
   // Skills length
@@ -63,6 +70,32 @@ const validatingSignupData = (data) => {
   return null;
 };
 
+const validateUpdateProfile = (req) => {
+  const allowedUpdates = [
+    "firstName",
+    "lastName",
+    "userName",
+    "gender",
+    "profileURL",
+    "githubUrl",
+    "linkedinUrl",
+    "headline",
+    "bio",
+    "skills",
+    "publicVisibility",
+  ];
+
+  const updatesBody = Object.keys(req.body)
+
+  if(updatesBody.length === 0) return false;
+
+  const isUpdateAllowed = updatesBody.every((field) =>
+    allowedUpdates.includes(field)
+  );
+  return isUpdateAllowed
+};
+
 module.exports = {
   validatingSignupData,
+  validateUpdateProfile
 };

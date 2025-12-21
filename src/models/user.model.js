@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
+// firstName,lastName,userName,gender,password,email,profileURL,githubUrl,linkedinUrl,role,headline,bio skills,publicVisibility,isActive
+
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -47,7 +49,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  avtar: {
+  profileURL: {
     type: String,
     required: true,
     validate(value) {

@@ -52,7 +52,7 @@ async function loginController(req, res) {
 async function signupController(req, res) {
   try {
     const user = req.body;
-    const { firstName, lastName, email, password, avtar, userName, role } =
+    const { firstName, lastName, email, password, profileURL, userName, role } =
       user;
 
     const error = validatingSignupData(user);
@@ -74,7 +74,7 @@ async function signupController(req, res) {
       lastName,
       role: role || "user",
       email: email.toLowerCase(),
-      avtar,
+      profileURL,
       userName,
       password: hashedPassword,
     });

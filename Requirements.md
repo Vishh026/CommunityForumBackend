@@ -7,7 +7,7 @@
 - middleware
 
 schama =>
-USER -> firstName,lastName,role,email,password,bio,skills,headline,avtar,userName,commmunities,connections
+USER -> firstName,lastName,role,email,password,bio,skills,headline,profileURL,userName,commmunities,connections
 
 
 <!-- login -->
