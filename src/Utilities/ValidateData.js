@@ -8,52 +8,50 @@ const validateSignupData = (data) => {
     role,
     email,
     password,
-    bio,
     skills = [],
-    headline,
     profileURL,
     userName,
     githubUrl,
     linkedinUrl,
+    bio,
   } = data;
 
-  // 🔥 CHANGED: strict required checks
   if (![firstName, lastName, role, email, password, profileURL, userName].every(Boolean)) {
-    return { error: { field: "required", message: "Required fields are missing" } };
+    throw new Error("Required fields are missing");
   }
 
   if (!validator.isEmail(email)) {
-    return { error: { field: "email", message: "Invalid email format" } };
+    throw new Error("Invalid email format");
   }
 
   if (!validator.isStrongPassword(password)) {
-    return { error: { field: "password", message: "Password is too weak" } };
+    throw new Error("Password is too weak");
   }
 
   if (!validator.isURL(profileURL)) {
-    return { error: { field: "profileURL", message: "Invalid profile URL" } };
+    throw new Error("Invalid profile URL");
   }
 
   if (!Array.isArray(skills) || skills.length > 8) {
-    return { error: { field: "skills", message: "Skills must be an array (max 8)" } };
+    throw new Error("Skills must be an array (max 8)");
   }
 
   if (githubUrl && !isValidGithubUrl(githubUrl)) {
-    return { error: { field: "githubUrl", message: "Invalid GitHub URL" } };
+    throw new Error("Invalid GitHub URL");
   }
 
   if (linkedinUrl && !isValidLinkedinUrl(linkedinUrl)) {
-    return { error: { field: "linkedinUrl", message: "Invalid LinkedIn URL" } };
+    throw new Error("Invalid LinkedIn URL");
   }
 
   if (bio && bio.length > 200) {
-    return { error: { field: "bio", message: "Bio too long" } };
+    throw new Error("Bio too long");
   }
 
-  return { error: null }; // 🔥 CONSISTENT RETURN
+  return true; 
 };
 
-const validateUpdateProfile = (body) => {
+const validateUpdateProfile = (req) => {
   const allowedUpdates = [
     "firstName",
     "lastName",
@@ -68,42 +66,45 @@ const validateUpdateProfile = (body) => {
     "publicVisibility",
   ];
 
-  const updates = Object.keys(body);
+  const updatesBody = Object.keys(req.body);
 
-  if (updates.length === 0) {
-    return { error: { field: "body", message: "Empty update payload" } };
+  if (updatesBody.length === 0) {
+    throw new Error("No fields provided for update");
   }
 
-  // 🔥 CHANGED: whitelist enforcement
-  const isAllowed = updates.every((field) => allowedUpdates.includes(field));
-  if (!isAllowed) {
-    return { error: { field: "field", message: "Invalid update field" } };
+  const isUpdateAllowed = updatesBody.every((field) =>
+    allowedUpdates.includes(field)
+  );
+
+  if (!isUpdateAllowed) {
+    throw new Error("One or more fields are not allowed to be updated");
   }
 
-  // 🔥 VALUE VALIDATION
-  if (body.firstName && body.firstName.trim() === "") {
-    return { error: { field: "firstName", message: "First name cannot be empty" } };
+  // 🔎 Field-level validation
+  const { profileURL, githubUrl, linkedinUrl, skills, bio } = req.body;
+
+  if (profileURL && !validator.isURL(profileURL)) {
+    throw new Error("Invalid profile URL");
   }
 
-  if (body.skills && (!Array.isArray(body.skills) || body.skills.length > 8)) {
-    return { error: { field: "skills", message: "Invalid skills array" } };
+  if (githubUrl && !isValidGithubUrl(githubUrl)) {
+    throw new Error("Invalid GitHub URL");
   }
 
-  if (body.publicVisibility && !["PUBLIC", "PRIVATE"].includes(body.publicVisibility)) {
-    return { error: { field: "publicVisibility", message: "Invalid visibility value" } };
+  if (linkedinUrl && !isValidLinkedinUrl(linkedinUrl)) {
+    throw new Error("Invalid LinkedIn URL");
   }
 
-  if (body.githubUrl && !isValidGithubUrl(body.githubUrl)) {
-    return { error: { field: "githubUrl", message: "Invalid GitHub URL" } };
+  if (skills && (!Array.isArray(skills) || skills.length > 8)) {
+    throw new Error("Skills must be an array (max 8)");
   }
 
-  if (body.linkedinUrl && !isValidLinkedinUrl(body.linkedinUrl)) {
-    return { error: { field: "linkedinUrl", message: "Invalid LinkedIn URL" } };
+  if (bio && bio.length > 200) {
+    throw new Error("Bio too long");
   }
 
-  return { error: null }; // 🔥 CONSISTENT
+  return true; // ✅ consistency matters
 };
-
 
 const sanitizeUser = (user) => {
   if (!user) return null;
@@ -114,32 +115,33 @@ const sanitizeUser = (user) => {
 const validateCommunityData = (data) => {
   const { name, image, isPrivate, rules } = data;
 
-  // Required
+  // name
   if (!name || typeof name !== "string" || !name.trim()) {
-    return { field: "name", message: "Community name is required" };
+    throw new Error("Community name is required");
   }
 
   if (name.trim().length < 3) {
-    return { field: "name", message: "Community name must be at least 3 characters" };
+    throw new Error("Community name must be at least 3 characters");
   }
 
-  // Image
+  // image
   if (image && typeof image !== "string") {
-    return { field: "image", message: "Image must be a valid URL string" };
+    throw new Error("Image must be a valid URL string");
   }
 
-  // Rules
+  // rules
   if (rules && !Array.isArray(rules)) {
-    return { field: "rules", message: "Rules must be an array" };
+    throw new Error("Rules must be an array");
   }
 
   // isPrivate
   if (isPrivate !== undefined && typeof isPrivate !== "boolean") {
-    return { field: "isPrivate", message: "isPrivate must be true or false" };
+    throw new Error("isPrivate must be true or false");
   }
 
-  return null; // ✅ Pattern A respected
+  return true; // ✅ success contract
 };
+
 
 
 

@@ -5,16 +5,57 @@ POST /api/communities/:id/join ===========================================
 POST /api/communities/:id /leave ==========================================
 
 # Community Requests
-
-POST /api/community-requests        <!--Request new community -->
+POST /api/community-requests/       <!--Request new community -->
 GET  /api/community-requests/me     <!--List my pending requests -->
 
-
 # Admin -communities 
-
 POST    /api/community/create  ✅
-DELETE  /api/community/:userid   
+DELETE  /api/community/:userid  ✅ 
 EDIT     /api/community/edit ✅
+
+
+# community 
+POST /api/communities/:communityId/join
+POST /api/communities/:communityId/request
+POST /api/communities/:communityId/request/:requestId/accept 
+POST /api/communities/:communityId/request/:requestId/reject
+
+
+
+
+
+<!-- Flow Overview
+
+Actors:
+User A → wants to join
+
+Community B → the target community
+
+Admin/Creator → optionally manages private communities
+
+Steps:
+
+User clicks “Join Community”
+
+Backend checks access rules:
+
+Community exists?
+
+Is the user blocked?
+
+Is the user already a member?
+
+Is the community public or private?
+
+Depending on community type:
+
+Public → user is automatically added to members
+
+Private → reject join or add to pending requests (optional)
+
+Save the update in the database
+
+Return a response to the user -->
 
 
 

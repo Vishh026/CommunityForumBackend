@@ -55,10 +55,8 @@ async function signupController(req, res) {
     const { firstName, lastName, email, password, profileURL, userName, role } =
       user;
 
-    const error = validateSignupData (user);
-    if (error) {
-      return res.status(400).json({ success: false, error });
-    }
+    validateSignupData(user);
+    
 
     const existingUser = await User.findOne({ email });
     if (existingUser)
