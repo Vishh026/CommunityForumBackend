@@ -1,5 +1,6 @@
 const Community = require("../models/community.model");
 const { validateCommunityData } = require("../Utilities/ValidateData");
+const mongoose = require("mongoose");
 
 async function createCommunityController(req, res) {
   try {
@@ -54,9 +55,9 @@ async function createCommunityController(req, res) {
 
 async function editCommunityController(req, res) {
   try {
-    const adminId = req.user._id
+    const adminId = req.user._id;
     const communityId = req.params.id;
-    
+
     const community = await Community.findById(communityId);
     if (!community)
       return res.status(401).json({ message: "community not found" });
@@ -66,9 +67,10 @@ async function editCommunityController(req, res) {
 
     const allowedUpdates = [
       "name",
+      "headline",
       "bio",
       "image",
-      "headline",
+      ,
       "description",
       "isPrivate",
     ];
@@ -78,7 +80,7 @@ async function editCommunityController(req, res) {
     );
     if (!validateUpdate) res.status(401).json("Invalid updates");
 
-    Object.keys(req.body).forEach((val) => community[val] = req.body[val]);
+    Object.keys(req.body).forEach((val) => (community[val] = req.body[val]));
 
     await community.save();
 
@@ -91,9 +93,40 @@ async function editCommunityController(req, res) {
   }
 }
 
+async function fetchCommunityByIdController(req, res) {
+  try {
+    const communityId = req.params.communityId;
+
+    if (!mongoose.Types.ObjectId.isValid(communityId)) {
+      return res.status(400).json({ message: "invalid community " });
+    }
+
+    const community = await Community.findOne({
+      _id: communityId,
+      // you are not in communities blocked user
+      blockedUsers: {$nin : [req.user._id]},
+      // is Community private?? or if you are member then only give access
+      $or: [
+        {isPrivate: false},
+        {members: req.user._id}
+      ]
+    }).select("-__v")
+
+    if (!community)
+      return res.status(404).json({ message: "Error in finding community" });
+
+    res
+      .status(200)
+      .json({ message: "Fecth community successfully", community });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
 module.exports = {
   createCommunityController,
   editCommunityController,
+  fetchCommunityByIdController,
 };
 
 // try{

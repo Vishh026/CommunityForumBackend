@@ -5,9 +5,9 @@ const communitySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true, 
-  minlength: 3, 
-  maxlength: 50 
+    trim: true,
+    minlength: 3,
+    maxlength: 50,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -38,7 +38,10 @@ const communitySchema = new mongoose.Schema({
     },
   ],
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
-  members: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  members: [{ 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User" 
+  }],
   maxMembers: {
     type: Number,
     default: null,

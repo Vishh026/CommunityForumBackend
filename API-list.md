@@ -13,8 +13,8 @@ GET  /api/community-requests/me     <!--List my pending requests -->
 # Admin -communities 
 
 POST    /api/community/create  ✅
-DELETE  /api/community/:userid
-EDIT     /api/community/edit
+DELETE  /api/community/:userid   
+EDIT     /api/community/edit ✅
 
 
 
