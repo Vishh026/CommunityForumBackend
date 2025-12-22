@@ -1,18 +1,3 @@
-
-# USER
-POST  /api/auth/register  ✅
-POST  /api/auth/login ✅
-POST  /api/auth/logout ✅
-GET  /api/auth/me ✅
-
-
-# Loggedin user
-GET  /api/users/me ✅
-GET /api/users/:id
-PACTH /api/users/update ✅
-
-
-
 # commnunity
 GET /api/communities 
 GET /api/communities/:id
@@ -23,6 +8,50 @@ POST /api/communities/:id /leave ==========================================
 
 POST /api/community-requests        <!--Request new community -->
 GET  /api/community-requests/me     <!--List my pending requests -->
+
+
+# Admin -communities 
+
+POST    /api/community/create  ✅
+DELETE  /api/community/:userid
+EDIT     /api/community/edit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# USER
+POST  /api/auth/register  ✅
+POST  /api/auth/login ✅
+POST  /api/auth/logout ✅
+GET  /api/auth/me ✅
+
+
+# Loggedin user
+GET  /api/users/me ✅
+GET /api/users/:id ✅
+PACTH /api/users/update ✅
+
+
+
+
+
+
+
 
 
 

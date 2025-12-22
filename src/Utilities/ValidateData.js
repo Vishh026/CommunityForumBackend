@@ -1,7 +1,7 @@
 const validator = require("validator");
 const { isValidGithubUrl, isValidLinkedinUrl } = require("./helperFunctions");
 
-const validatingSignupData = (data) => {
+const validateSignupData = (data) => {
   const {
     firstName,
     lastName,
@@ -17,60 +17,43 @@ const validatingSignupData = (data) => {
     linkedinUrl,
   } = data;
 
-  // Required fields
-  if (
-    !firstName ||
-    !lastName ||
-    !role ||
-    !email ||
-    !password ||
-    !profileURL ||
-    !userName
-  ) {
-    return { field: "required", message: "Required fields are missing" };
+  // 🔥 CHANGED: strict required checks
+  if (![firstName, lastName, role, email, password, profileURL, userName].every(Boolean)) {
+    return { error: { field: "required", message: "Required fields are missing" } };
   }
 
-  // Email check
   if (!validator.isEmail(email)) {
-    return { field: "email", message: "Invalid Email format" };
+    return { error: { field: "email", message: "Invalid email format" } };
   }
 
-  // Password check
   if (!validator.isStrongPassword(password)) {
-    return { field: "password", message: "Password is too weak" };
+    return { error: { field: "password", message: "Password is too weak" } };
   }
 
-  // profileURL URL check
   if (!validator.isURL(profileURL)) {
-    return { field: "profileURL", message: "URL is not valid" };
+    return { error: { field: "profileURL", message: "Invalid profile URL" } };
   }
 
-  // Skills length
-  if (skills.length > 8) {
-    return { field: "skills", message: "Skills length exceeded" };
+  if (!Array.isArray(skills) || skills.length > 8) {
+    return { error: { field: "skills", message: "Skills must be an array (max 8)" } };
   }
 
-  // GitHub & LinkedIn
   if (githubUrl && !isValidGithubUrl(githubUrl)) {
-    return { field: "githubUrl", message: "Invalid GitHub profile URL" };
+    return { error: { field: "githubUrl", message: "Invalid GitHub URL" } };
   }
 
   if (linkedinUrl && !isValidLinkedinUrl(linkedinUrl)) {
-    return { field: "linkedinUrl", message: "Invalid LinkedIn profile URL" };
+    return { error: { field: "linkedinUrl", message: "Invalid LinkedIn URL" } };
   }
 
-  // Bio length
   if (bio && bio.length > 200) {
-    return { field: "bio", message: "Bio too long" };
+    return { error: { field: "bio", message: "Bio too long" } };
   }
 
-  // Sanitize bio
-  const cleanBio = bio ? validator.escape(bio.trim()) : "";
-
-  return null;
+  return { error: null }; // 🔥 CONSISTENT RETURN
 };
 
-const validateUpdateProfile = (req) => {
+const validateUpdateProfile = (body) => {
   const allowedUpdates = [
     "firstName",
     "lastName",
@@ -85,26 +68,84 @@ const validateUpdateProfile = (req) => {
     "publicVisibility",
   ];
 
-  const updatesBody = Object.keys(req.body)
+  const updates = Object.keys(body);
 
-  if(updatesBody.length === 0) return false;
+  if (updates.length === 0) {
+    return { error: { field: "body", message: "Empty update payload" } };
+  }
 
-  const isUpdateAllowed = updatesBody.every((field) =>
-    allowedUpdates.includes(field)
-  );
-  return isUpdateAllowed
+  // 🔥 CHANGED: whitelist enforcement
+  const isAllowed = updates.every((field) => allowedUpdates.includes(field));
+  if (!isAllowed) {
+    return { error: { field: "field", message: "Invalid update field" } };
+  }
+
+  // 🔥 VALUE VALIDATION
+  if (body.firstName && body.firstName.trim() === "") {
+    return { error: { field: "firstName", message: "First name cannot be empty" } };
+  }
+
+  if (body.skills && (!Array.isArray(body.skills) || body.skills.length > 8)) {
+    return { error: { field: "skills", message: "Invalid skills array" } };
+  }
+
+  if (body.publicVisibility && !["PUBLIC", "PRIVATE"].includes(body.publicVisibility)) {
+    return { error: { field: "publicVisibility", message: "Invalid visibility value" } };
+  }
+
+  if (body.githubUrl && !isValidGithubUrl(body.githubUrl)) {
+    return { error: { field: "githubUrl", message: "Invalid GitHub URL" } };
+  }
+
+  if (body.linkedinUrl && !isValidLinkedinUrl(body.linkedinUrl)) {
+    return { error: { field: "linkedinUrl", message: "Invalid LinkedIn URL" } };
+  }
+
+  return { error: null }; // 🔥 CONSISTENT
 };
 
-// Utilities/sanitizeUser.js
+
 const sanitizeUser = (user) => {
   if (!user) return null;
   const { firstName, lastName, userName, avatar, bio, headline, skills, publicVisibility, githubUrl, linkedinUrl } = user;
   return { firstName, lastName, userName, avatar, bio, headline, skills, publicVisibility, githubUrl, linkedinUrl };
 }
 
+const validateCommunityData = (data) => {
+  const { name, image, isPrivate, rules } = data;
+
+  // Required
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return { field: "name", message: "Community name is required" };
+  }
+
+  if (name.trim().length < 3) {
+    return { field: "name", message: "Community name must be at least 3 characters" };
+  }
+
+  // Image
+  if (image && typeof image !== "string") {
+    return { field: "image", message: "Image must be a valid URL string" };
+  }
+
+  // Rules
+  if (rules && !Array.isArray(rules)) {
+    return { field: "rules", message: "Rules must be an array" };
+  }
+
+  // isPrivate
+  if (isPrivate !== undefined && typeof isPrivate !== "boolean") {
+    return { field: "isPrivate", message: "isPrivate must be true or false" };
+  }
+
+  return null; // ✅ Pattern A respected
+};
+
+
 
 module.exports = {
-  validatingSignupData,
+  validateSignupData,
   validateUpdateProfile,
-  sanitizeUser
+  sanitizeUser,
+  validateCommunityData
 };

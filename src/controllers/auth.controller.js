@@ -1,5 +1,5 @@
 const User = require("../models/user.model");
-const { validatingSignupData } = require("../Utilities/ValidateData");
+const { validateSignupData  } = require("../Utilities/ValidateData");
 const validator = require("validator");
 const {
   comparePassword,
@@ -55,7 +55,7 @@ async function signupController(req, res) {
     const { firstName, lastName, email, password, profileURL, userName, role } =
       user;
 
-    const error = validatingSignupData(user);
+    const error = validateSignupData (user);
     if (error) {
       return res.status(400).json({ success: false, error });
     }
@@ -109,7 +109,7 @@ async function getLoggedInUserController (req,res) {
         
         return res.status(201).json({message: "Fetch logged-In user successfully",user})
     } catch (error) {
-        res.status(401).json({message: err.message})
+        res.status(401).json({message: error.message})
     }
 }
 
