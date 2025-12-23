@@ -11,14 +11,13 @@ GET  /api/community-requests/me     <!--List my pending requests -->
 # Admin -communities 
 POST    /api/community/create  ✅
 DELETE  /api/community/:userid  ✅ 
-EDIT     /api/community/edit ✅
+EDIT    /api/community/edit ✅
 
 
 # community 
-POST /api/communities/:communityId/join
-POST /api/communities/:communityId/request
-POST /api/communities/:communityId/request/:requestId/accept 
-POST /api/communities/:communityId/request/:requestId/reject
+POST   /api/communities/:communityId/join
+DELETE /api/communities/:communityId/leave
+POST   /api/communities/:communityId/:status/:requestId/  =>  status= ["ACCEPT","REJECT"]
 
 
 
@@ -35,7 +34,7 @@ Admin/Creator → optionally manages private communities
 
 Steps:
 
-User clicks “Join Community”
+User clicks “join Community”
 
 Backend checks access rules:
 

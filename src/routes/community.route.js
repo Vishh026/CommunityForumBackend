@@ -1,6 +1,6 @@
 const express = require('express')
 const { userAuth, adminAuth } = require('../middlewares/auth.middleware')
-const { createCommunityController,editCommunityController ,fetchCommunityByIdController, joinCommunityController} = require('../controllers/Community.controller')
+const { createCommunityController,editCommunityController ,fetchCommunityByIdController, joinCommunityController, updateRequestStatusController} = require('../controllers/Community.controller')
 
 
 const router = express.Router()
@@ -11,6 +11,7 @@ router.get("/:communityId",userAuth,adminAuth,fetchCommunityByIdController)
 
 
 router.post("/:communityId/join",userAuth,joinCommunityController)
+router.post("/:communityId/:status/:requestId/",userAuth,adminAuth,updateRequestStatusController)
 
 
 

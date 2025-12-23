@@ -16,7 +16,7 @@ function isValidGithubUrl(url) {
 
 async function generateAccessToken(_id,role) {
   return jwt.sign({ _id: _id,role: role  }, process.env.ACCESS_TOKEN_SECRETE, {
-    expiresIn: "1h",
+    expiresIn: "7d",
   });
 }
 

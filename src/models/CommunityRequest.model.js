@@ -15,15 +15,15 @@ const CommunityRequestsSchema = new mongoose.Schema(
     },
     requestType: {
       type: String,
-      enum: ["JOIN"],
-      default : "JOIN",
+      enum: ["join"],
+      default : "join",
       required: true,
     },
 
     status: {
       type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED"],
-      default: "PENDING",
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
   },
   {
