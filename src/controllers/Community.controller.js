@@ -241,16 +241,61 @@ async function updateRequestStatusController(req, res) {
   }
 }
 
+async function leaveCommunityController(req,res){
+  try{
+    const userId = req.user._id;
+    const {communityId} = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(communityId)){
+      return res.status(401).send("Inavlid community Id")
+    }
+
+    const community = await Community.findById(communityId)
+    if(!community) return res.status(401).send("community not found")
+    
+
+      const isMember = community.members.some((id) => id.equals(userId));
+    if (!isMember) {
+      return res.status(400).json({ message: "You are not a member" });
+    }
+
+    if (community.createdBy.equals(userId)) {
+      return res.status(403).json({ message: "Admin cannot leave their own community" });
+    }
+
+    await Community.updateOne(
+      {_id: communityId},
+      {$pull : {members: userId}}
+    )
+
+    return res.status(200).json({ message: "Left community successfully" });
+    
+    // community ??
+    // user is member??
+    // amin can't leave own community?/
+
+    res.send("success")
+
+
+}catch(err){
+    return res.status(400).json({message: err.message})
+}
+
+}
+
 module.exports = {
   createCommunityController,
   editCommunityController,
   fetchCommunityByIdController,
   joinCommunityController,
   updateRequestStatusController,
+  leaveCommunityController
 };
 
-// try{
+
+// // try{
 
 // }catch(err){
 //     return res.status(400).json({message: err.message})
 // }
+

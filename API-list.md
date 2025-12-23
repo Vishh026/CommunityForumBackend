@@ -15,9 +15,9 @@ EDIT    /api/community/edit ✅
 
 
 # community 
-POST   /api/communities/:communityId/join
-DELETE /api/communities/:communityId/leave
-POST   /api/communities/:communityId/:status/:requestId/  =>  status= ["ACCEPT","REJECT"]
+POST   /api/communities/:communityId/join  ✅
+DELETE /api/communities/:communityId/leave  
+PATCH   /api/communities/:communityId/:status/:requestId/  =>  status= ["ACCEPT","REJECT"]  ✅
 
 
 
