@@ -3,6 +3,62 @@ const { validateCommunityData } = require("../Utilities/ValidateData");
 const mongoose = require("mongoose");
 const communityRequest = require("../models/CommunityRequest.model");
 
+async function fetchMyCommunities(req, res) {
+  try {
+    const userId = req.user._id;
+
+    const myCommunities = await Community.find({
+      members: userId,
+      blockedUsers: { $nin: [userId] },
+    }).select("-__v -blockedUsers");
+
+    const requestedCommunities = await communityRequest
+      .find({ fromUser: userId, status: "pending" })
+      .populate({
+        path: "requestedCommunity",
+        select: "name isPrivate members createdBy image",
+      });
+
+      const filteredRequest = requestedCommunities.filter(req => 
+        res.requestedCommunities && !res.requestedCommunities.blockedUsers(userId)
+      )
+
+    if (!myCommunities.length && !requestedCommunities.length)
+      return res.status(404).json({ message: "No communities found" });
+
+    res.status(200).json({
+      message: "Fetched communities successfully",
+      joinedCommunities: myCommunities,
+      pendingRequests: filteredRequest,
+    });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function fetechAllCommunities(req, res) {
+  try {
+    const userId = req.user._id;
+
+    const communities = await Community.find({
+      blockedUsers: { $nin: [userId] },
+      $or: [
+        { isPrivate: false },
+        { isPrivate: true, members: userId, createdBy: userId },
+      ],
+    }).select("-blockedUsers -__v");
+
+    if (communities.length === 0)
+      return res.status(401).send("Communities not found");
+
+    res
+      .status(201)
+      .json({ message: "Community fetch successfully", communities });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
 async function createCommunityController(req, res) {
   try {
     const adminId = req.user._id;
@@ -216,86 +272,83 @@ async function updateRequestStatusController(req, res) {
       return res.status(400).send("Request not found");
     }
 
-    if(requestCommunity.status !== "pending"){
-      return res.status(403).json({message: "Request alredy processed"})
+    if (requestCommunity.status !== "pending") {
+      return res.status(403).json({ message: "Request alredy processed" });
     }
 
     if (status == "approved") {
       await Community.updateOne(
         { _id: communityId },
-        { $addToSet: { members:  requestCommunity.fromUser } }
+        { $addToSet: { members: requestCommunity.fromUser } }
       );
-
-      
     }
 
     requestCommunity.status = status;
-      await  requestCommunity.save();
+    await requestCommunity.save();
 
-    return res
-      .status(200)
-      .json({ message: `Request ${status.toLowerCase()} successfully`,requestCommunity });
-
+    return res.status(200).json({
+      message: `Request ${status.toLowerCase()} successfully`,
+      requestCommunity,
+    });
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
 }
 
-async function leaveCommunityController(req,res){
-  try{
+async function leaveCommunityController(req, res) {
+  try {
     const userId = req.user._id;
-    const {communityId} = req.params
+    const { communityId } = req.params;
 
-    if(!mongoose.Types.ObjectId.isValid(communityId)){
-      return res.status(401).send("Inavlid community Id")
+    if (!mongoose.Types.ObjectId.isValid(communityId)) {
+      return res.status(401).send("Inavlid community Id");
     }
 
-    const community = await Community.findById(communityId)
-    if(!community) return res.status(401).send("community not found")
-    
+    const community = await Community.findById(communityId);
+    if (!community) return res.status(401).send("community not found");
 
-      const isMember = community.members.some((id) => id.equals(userId));
+    const isMember = community.members.some((id) => id.equals(userId));
     if (!isMember) {
       return res.status(400).json({ message: "You are not a member" });
     }
 
     if (community.createdBy.equals(userId)) {
-      return res.status(403).json({ message: "Admin cannot leave their own community" });
+      return res
+        .status(403)
+        .json({ message: "Admin cannot leave their own community" });
     }
 
     await Community.updateOne(
-      {_id: communityId},
-      {$pull : {members: userId}}
-    )
+      { _id: communityId },
+      { $pull: { members: userId } }
+    );
 
     return res.status(200).json({ message: "Left community successfully" });
-    
+
     // community ??
     // user is member??
     // amin can't leave own community?/
 
-    res.send("success")
-
-
-}catch(err){
-    return res.status(400).json({message: err.message})
-}
-
+    res.send("success");
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
 }
 
 module.exports = {
+  fetchMyCommunities,
+  fetechAllCommunities,
   createCommunityController,
   editCommunityController,
   fetchCommunityByIdController,
   joinCommunityController,
   updateRequestStatusController,
-  leaveCommunityController
+  leaveCommunityController,
 };
 
+// try{
 
-// // try{
-
+// res.status(201).send("success")
 // }catch(err){
 //     return res.status(400).json({message: err.message})
 // }
-

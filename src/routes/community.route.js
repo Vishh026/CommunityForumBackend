@@ -1,9 +1,12 @@
 const express = require('express')
 const { userAuth, adminAuth } = require('../middlewares/auth.middleware')
-const { createCommunityController,editCommunityController ,fetchCommunityByIdController, joinCommunityController, updateRequestStatusController, leaveCommunityController} = require('../controllers/Community.controller')
+const { createCommunityController,editCommunityController ,fetchCommunityByIdController, joinCommunityController, updateRequestStatusController, leaveCommunityController, fetechAllCommunities, fetchMyCommunities} = require('../controllers/Community.controller')
 
 
 const router = express.Router()
+
+router.get("/",userAuth,fetechAllCommunities)
+router.get('/me',userAuth,fetchMyCommunities)
 
 router.post("/create",userAuth,adminAuth,createCommunityController)
 router.patch("/edit/:id",userAuth,adminAuth,editCommunityController)

@@ -1,8 +1,6 @@
 # commnunity
-GET /api/communities 
-GET /api/communities/:id
-POST /api/communities/:id/join ===========================================
-POST /api/communities/:id /leave ==========================================
+GET /api/communities      <!-- both for admin and user they are member of -->
+GET /api/communities/:id <!-- get the specific community -->
 
 # Community Requests
 POST /api/community-requests/       <!--Request new community -->
@@ -13,11 +11,10 @@ POST    /api/community/create  ✅
 DELETE  /api/community/:userid  ✅ 
 EDIT    /api/community/edit ✅
 
-
-# community 
 POST   /api/communities/:communityId/join  ✅
-DELETE /api/communities/:communityId/leave  
+DELETE /api/communities/:communityId/leave  ✅
 PATCH   /api/communities/:communityId/:status/:requestId/  =>  status= ["ACCEPT","REJECT"]  ✅
+
 
 
 
