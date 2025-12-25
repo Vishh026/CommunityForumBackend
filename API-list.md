@@ -1,10 +1,10 @@
 # commnunity
-GET /api/communities      <!-- both for admin and user they are member of -->
-GET /api/communities/:id <!-- get the specific community -->
+GET /api/communities    ✅  
+GET /api/communities/:id ✅
 
 # Community Requests
-POST /api/community-requests/       <!--Request new community -->
-GET  /api/community-requests/me     <!--List my pending requests -->
+POST /api/community-requests/       
+GET  /api/community-requests/me ✅    
 
 # Admin -communities 
 POST    /api/community/create  ✅
@@ -14,6 +14,25 @@ EDIT    /api/community/edit ✅
 POST   /api/communities/:communityId/join  ✅
 DELETE /api/communities/:communityId/leave  ✅
 PATCH   /api/communities/:communityId/:status/:requestId/  =>  status= ["ACCEPT","REJECT"]  ✅
+
+# USER
+POST  /api/auth/register  ✅
+POST  /api/auth/login ✅
+POST  /api/auth/logout ✅
+GET  /api/auth/me ✅
+
+
+# Loggedin user
+GET  /api/users/me ✅
+GET /api/users/:id ✅
+PACTH /api/users/update ✅
+
+
+# Audit Log & Moderation Timeline
+
+create the logAction helper function 
+call this function before POST(saving) data.
+
 
 
 

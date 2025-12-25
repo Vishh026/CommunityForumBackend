@@ -3,6 +3,8 @@ const {
   validateUpdateProfile,
   sanitizeUser,
 } = require("../Utilities/ValidateData");
+const AuditLog = require("../models/AuditLog.model");
+const { logAction } = require("../Utilities/logAction");
 
 async function getMyProfile(req, res) {
   try {
@@ -30,7 +32,7 @@ async function updateMyProfile(req, res) {
 
     if (!loggedInUser)
       return res.status(404).json({ message: "user not found" });
-    
+
     if (req.body.skills && !Array.isArray(req.body.skills)) return false;
     if (req.body.firstName && req.body.firstName.trim() === "") return false;
 
@@ -42,6 +44,24 @@ async function updateMyProfile(req, res) {
 
     await loggedInUser.save();
 
+    const lastUpdate = await AuditLog.findOne({
+      actorId: loggedInUser._id,
+      action: "USER_UPDATE",
+    }).sort({ createdAt: -1 });
+
+    if (!lastUpdate || Date.now(lastUpdate.createdAt).getTime() > 60 * 2000) {
+      await logAction({
+        actorId: loggedInUser._id,
+        actorRole: loggedInUser.role,
+        action: "USER_UPDATED",
+        entityType: "PROFILE",
+        entityId: loggedInUser._id,
+        metadata: {
+          ip: req.ip,
+          userAgent: req.headers["user-agent"], // fixed typo
+        },
+      });
+    }
     res.status(201).json({
       mesasge: `${
         loggedInUser.firstName + " " + loggedInUser.lastName
