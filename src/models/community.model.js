@@ -13,6 +13,7 @@ const communitySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "User",
+    index:true,
   },
   headline: {
     type: String,
@@ -49,9 +50,12 @@ const communitySchema = new mongoose.Schema({
   isPrivate: {
     type: Boolean,
     default: false,
+    index:true
   },
   blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 });
+
+communitySchema.index({ members: 1, isPrivate: 1 });
 
 const Community = mongoose.model("Community", communitySchema);
 
