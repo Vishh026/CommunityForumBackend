@@ -94,7 +94,7 @@ async function signupController(req, res) {
     await logAction({
       actorId: newUser._id,
       actorRole: newUser.role,
-      action: "USER_REGISTERED",
+      action: "USER_CREATED",
       entityType: "USER",
       entityId: newUser._id,
       metadata: {

@@ -14,6 +14,17 @@ const auditLogSchema = new mongoose.Schema({
   action: {
     type: String,
     required: true,
+    enum: [
+    "USER_LOGIN",
+    "USER_DELETED",
+    "COMMUNITY_CREATED",
+    "COMMUNITY_EDITED",
+    "COMMUNITY_REQUEST",
+    "COMMUNITY_DELETED",
+    "JOIN_COMMUNITY",
+    "JOIN_REQUEST_SENT",
+    "USER_UPDATED"
+  ]
   },
   entityType: {  
     type: String, 
@@ -35,8 +46,9 @@ const auditLogSchema = new mongoose.Schema({
 // Indexes for faster queries
 auditLogSchema.index({ actorId: 1 });
 auditLogSchema.index({ action: 1 });
-auditLogSchema.index({ targetType: 1 });
+auditLogSchema.index({ entityType: 1 });
 auditLogSchema.index({ createdAt: -1 });
+auditLogSchema.index({ action: 1, createdAt: -1 });
 
 // Compound index for common queries
 auditLogSchema.index({ actorId: 1, action: 1, createdAt: -1 });
@@ -46,6 +58,7 @@ auditLogSchema.index(
   { createdAt: 1 },
   { expireAfterSeconds: 60 * 60 * 24 * 365 } // 1 year
 );
+
 
 
 

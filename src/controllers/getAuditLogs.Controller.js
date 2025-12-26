@@ -1,5 +1,8 @@
 const AuditLog = require("../models/AuditLog.model");
 const mongoose = require("mongoose");
+const { getDataRanges } = require("../Utilities/dataRange");
+const User = require("../models/user.model");
+const Community = require("../models/community.model");
 
 // Controller to get audit logs with security checks
 async function getAuditLogsController(req, res) {
@@ -48,4 +51,79 @@ async function getAuditLogsController(req, res) {
   }
 }
 
-module.exports = { getAuditLogsController };
+
+async function getAdminAnalyticsController(req, res) {
+  try {
+    // 🔐 Admin guard
+    if (!req.user || req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const { range, from, to } = req.query;
+
+    // 📅 dynamic date calculation
+    const { startDate, endDate } = getDateRange({ range, from, to });
+
+    // 🚀 Parallel DB queries
+    const [
+      totalUsers,
+      usersInRange,
+      totalCommunities,
+      communitiesInRange,
+      loginsInRange,
+      joinsInRange,
+      recentAuditLogs,
+    ] = await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ createdAt: { $gte: startDate, $lte: endDate } }),
+
+      Community.countDocuments({}),
+      Community.countDocuments({
+        createdAt: { $gte: startDate, $lte: endDate },
+      }),
+
+      AuditLog.countDocuments({
+        action: "USER_LOGIN",
+        createdAt: { $gte: startDate, $lte: endDate },
+      }),
+
+      AuditLog.countDocuments({
+        action: "JOIN_COMMUNITY",
+        createdAt: { $gte: startDate, $lte: endDate },
+      }),
+
+      AuditLog.find({
+        createdAt: { $gte: startDate, $lte: endDate },
+      })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .populate("actorId", "firstName lastName userName role"),
+    ]);
+
+    return res.status(200).json({
+      range: range || "7d",
+      users: {
+        total: totalUsers,
+        newUsers: usersInRange,
+      },
+      communities: {
+        total: totalCommunities,
+        created: communitiesInRange,
+      },
+      activity: {
+        logins: loginsInRange,
+        joins: joinsInRange,
+      },
+      recentAuditLogs,
+    });
+  } catch (err) {
+    console.error("Admin analytics error:", err);
+    return res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = { getAdminAnalyticsController };
+
+
+
+module.exports = { getAuditLogsController, getAdminAnalyticsController };

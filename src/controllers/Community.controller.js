@@ -384,7 +384,7 @@ async function leaveCommunityController(req, res) {
     await logAction({
       actorId: userId,
       actorRole: req.user.role,
-      action: "LEAVE_COMMUNITY",
+      action: "COMMUNITY_DELETED",
       entityType: "COMMUNITY",
       entityId: communityId,
       metadata: {

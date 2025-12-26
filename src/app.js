@@ -4,8 +4,17 @@ const authRoute = require("./routes/auth.route")
 const profileRoute = require('./routes/profile.route')
 const communityRoute = require('./routes/community.route')
 const auditRoute = require('./routes/auditLog.route')
+const cors = require('cors')
 
 const app = express()
+
+app.use(cors({
+    origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}))
+
+
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
