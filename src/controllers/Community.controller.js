@@ -14,7 +14,7 @@ async function fetchMyCommunities(req, res) {
     }).select("-__v -blockedUsers");
 
     const requestedCommunities = await communityRequest
-      .find({ fromUser: userId, status: "pending" })
+      .find({ fromUser: userId, status: "PENDING" })
       .populate({
         path: "requestedCommunity",
         select: "name isPrivate members createdBy image",
@@ -66,7 +66,7 @@ async function createCommunityController(req, res) {
   try {
     const { _id: adminId, role: adminRole } = req.user;
 
-    if (adminRole !== "admin") {
+    if (adminRole !== "ADMIN") {
       return res.status(403).json({ message: "Only admins can create communities" });
     }
 
@@ -247,7 +247,7 @@ async function joinCommunityController(req, res) {
       const existingRequest = await communityRequest.findOne({
         requestedCommunity: communityId,
         fromUser: userId,
-        status: "pending",
+        status: "PENDING",
       });
 
       if (existingRequest) {
@@ -302,7 +302,7 @@ async function updateRequestStatusController(req, res) {
       return res.status(403).send("Only admin can update requests");
     }
 
-    const allowedStatus = ["approved", "rejected"];
+    const allowedStatus = ["APPROVED", "REJECTED"];
     if (!allowedStatus.includes(status.toLowerCase())) {
       return res.status(400).send("Invalid status");
     }
@@ -316,11 +316,11 @@ async function updateRequestStatusController(req, res) {
       return res.status(404).send("Request not found");
     }
 
-    if (requestCommunity.status !== "pending") {
+    if (requestCommunity.status !== "PENDING") {
       return res.status(403).json({ message: "Request already processed" });
     }
 
-    if (status.toLowerCase() === "approved") {
+    if (status.toLowerCase() === "APPROVED") {
       await Community.updateOne(
         { _id: communityId },
         { $addToSet: { members: requestCommunity.fromUser } }
@@ -333,8 +333,8 @@ async function updateRequestStatusController(req, res) {
    
     await logAction({
       actorId: adminId,
-      actorRole: "admin",
-      action: status.toLowerCase() === "approved" ? "REQUEST_APPROVED" : "REQUEST_REJECTED",
+      actorRole: "ADMIN",
+      action: status.toLowerCase() === "APPROVED" ? "REQUEST_APPROVED" : "REQUEST_REJECTED",
       entityType: "COMMUNITY_REQUEST",
       entityId: requestId,
       metadata: {

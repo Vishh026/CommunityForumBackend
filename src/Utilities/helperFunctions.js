@@ -13,7 +13,6 @@ function isValidGithubUrl(url) {
   return url.startsWith("https://github.com/");
 }
 
-
 async function generateAccessToken(_id,role) {
   return jwt.sign({ _id: _id,role: role  }, process.env.ACCESS_TOKEN_SECRETE, {
     expiresIn: "7d",

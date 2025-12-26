@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 /**
  * Allowed enums – keep logger strict, not controllers
  */
-const ALLOWED_ROLES = ["user", "admin", "ai"];
+const ALLOWED_ROLES = ["user", "ADMIN", "ai"];
 const ALLOWED_ENTITY_TYPES = [
   "USER",
   "COMMUNITY",
@@ -22,12 +22,6 @@ const ALLOWED_ACTIONS = [
   "POST_DELETED",
 ];
 
-/**
- * Fire-and-forget audit logger
- * - Never throws
- * - Never blocks request lifecycle
- * - Accepts full user object
- */
 function logAction({
   user,              // req.user
   action,

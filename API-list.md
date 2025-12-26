@@ -30,8 +30,12 @@ PACTH /api/users/update ✅
 
 # Audit Log & Moderation Timeline
 
-create the logAction helper function 
-call this function before POST(saving) data.
+GET /api/audit-logs ✅
+GET /api/analyztics ✅
+
+# Posts
+
+POST /api/communities/:communityId/announcement
 
 
 

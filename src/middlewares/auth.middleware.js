@@ -25,7 +25,7 @@ const adminAuth = async (req, res, next) => {
     
     if (!loggedInUser) return res.status(404).send("user not authenticated");
 
-    if(loggedInUser.role  !== "admin"){
+    if(loggedInUser.role  !== "ADMIN"){
       return res.status(403).send("Invalid access");
     }
 

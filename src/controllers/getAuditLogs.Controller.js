@@ -8,7 +8,7 @@ const Community = require("../models/community.model");
 async function getAuditLogsController(req, res) {
   try {
     // Only allow admin to access
-    if (!req.user || req.user.role !== "admin") {
+    if (!req.user || req.user.role !== "ADMIN") {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -51,11 +51,10 @@ async function getAuditLogsController(req, res) {
   }
 }
 
-
 async function getAdminAnalyticsController(req, res) {
   try {
     // 🔐 Admin guard
-    if (!req.user || req.user.role !== "admin") {
+    if (!req.user || req.user.role !== "ADMIN") {
       return res.status(403).json({ message: "Access denied" });
     }
 
@@ -121,9 +120,6 @@ async function getAdminAnalyticsController(req, res) {
     return res.status(500).json({ message: err.message });
   }
 }
-
-module.exports = { getAdminAnalyticsController };
-
 
 
 module.exports = { getAuditLogsController, getAdminAnalyticsController };

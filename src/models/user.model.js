@@ -70,12 +70,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["admin", "user"],
+    enum: ["ADMIN", "USER"],
     default: "user",
-  },
-  headline: {
-    type: String,
-    minLength:100
   },
   bio: {
     type: String,
@@ -97,6 +93,33 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  
+  adminType: {
+    type: String,
+    enum: ["COLLEGE", "UNIVERSITY", "PLACEMENT"],
+    default: null
+    // required ONLY if role === "ADMIN" (handle via validation/middleware)
+  },
+  collegeId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "College",
+    required: true
+  },
+  department: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  batchYear: {
+    type: Number,
+    required: true,
+    min: 2000,
+    max: 2100
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   }
 },{
   timestamps:true

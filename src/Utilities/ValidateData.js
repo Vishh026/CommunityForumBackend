@@ -48,6 +48,18 @@ const validateSignupData = (data) => {
     throw new Error("Bio too long");
   }
 
+  if(role === "ADMIN" && !adminType) {
+  return res.status(400).json({ message: "adminType is required for admin role" });
+}
+
+if(role === "USER" && adminType) {
+  return res.status(400).json({ message: "Users cannot have adminType" });
+}
+
+if(!collegeId || !department || !batchYear){
+  return res.status(400).json({ message: "collegeId, department and batchYear are required" });
+}
+
   return true; 
 };
 
@@ -108,9 +120,49 @@ const validateUpdateProfile = (req) => {
 
 const sanitizeUser = (user) => {
   if (!user) return null;
-  const { firstName, lastName, userName, avatar, bio, headline, skills, publicVisibility, githubUrl, linkedinUrl } = user;
-  return { firstName, lastName, userName, avatar, bio, headline, skills, publicVisibility, githubUrl, linkedinUrl };
-}
+
+  const {
+    _id,
+    firstName,
+    lastName,
+    userName,
+    profileURL,
+    avatar,
+    bio,
+    headline,
+    skills,
+    publicVisibility,
+    githubUrl,
+    linkedinUrl,
+    role,
+    adminType,
+    collegeId,
+    department,
+    batchYear,
+    isVerified,
+  } = user;
+
+  return {
+    _id,
+    firstName,
+    lastName,
+    userName,
+    profileURL,
+    avatar,
+    bio,
+    headline,
+    skills,
+    publicVisibility,
+    githubUrl,
+    linkedinUrl,
+    role,
+    adminType,
+    collegeId,
+    department,
+    batchYear,
+    isVerified,
+  };
+};
 
 const validateCommunityData = (data) => {
   const { name, image, isPrivate, rules } = data;

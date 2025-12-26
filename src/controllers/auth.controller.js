@@ -5,68 +5,95 @@ const {
   comparePassword,
   generateAccessToken,
   hashPassword,
-} = require("../Utilities/helperFunctions");
-const { logAction } = require("../Utilities/logAction");
-const AuditLog = require("../models/AuditLog.model");
+} = require("../Utilities/helperFunctions")
+
+
 
 async function loginController(req, res) {
   try {
     const { email, password } = req.body;
 
+
     if (!email || !password) {
-      return res.status(400).json({ message: "Email or Password missing" });
+      return res.status(400).json({ message: "Email or password missing" });
     }
 
-    if (!validator.isEmail(email))
+    if (!validator.isEmail(email)) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
 
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+  
     const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid)
-      return res.status(400).json({ message: "Invalid Credentials" });
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
+    // 4️⃣ Check verification for ADMIN
+    if (user.role === "ADMIN" && !user.isVerified) {
+      return res.status(403).json({ message: "Admin not verified yet" });
+    }
+
+    // 5️⃣ Generate JWT token (include role & adminType)
     const token = await generateAccessToken({
       _id: user._id,
       role: user.role,
+      adminType: user.adminType || null,
+      collegeId: user.collegeId
     });
 
+    // 6️⃣ Set cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/"
     });
 
+   
     await logAction({
       actorId: user._id,
       actorRole: user.role,
       action: "USER_LOGIN",
       entityType: "USER",
       entityId: user._id,
-      metadata: {
-        ip: req.ip,
-        userAgent: req.headers["user-agent"], 
-      },
+      metadata: { ip: req.ip, userAgent: req.headers["user-agent"] }
     });
 
-    return res.status(201).json({
-      message: "User login successfully!!",
-      user: { _id: user._id, role: user.role },
+
+    return res.status(200).json({
+      message: "User logged in successfully",
+      user: {
+        _id: user._id,
+        role: user.role,
+        adminType: user.adminType || null,
+        collegeId: user.collegeId,
+        department: user.department,
+        batchYear: user.batchYear,
+        isVerified: user.isVerified
+      }
     });
+
   } catch (err) {
-    res.status(500).json({ message: err });
+    return res.status(500).json({ message: err.message });
   }
 }
+
 
 async function signupController(req, res) {
   try {
     const user = req.body;
-    const { firstName, lastName, email, password, profileURL, userName, role } =
-      user;
+    const { firstName, lastName, email, password, profileURL, userName, role, 
+        collegeId, department, batchYear, adminType } = user;
+
+        let isVerified = false;
+if(role === "USER") isVerified = true
 
     validateSignupData(user);
 
@@ -76,18 +103,24 @@ async function signupController(req, res) {
 
     const hashedPassword = await hashPassword(password);
 
-    const allowedRole = ["user", "admin"];
-    if (!allowedRole.includes(role)) role = "user";
+    const allowedRole = ["USER", "ADMIN"];
+    if (!allowedRole.includes(role)) role = "USER";
 
     const newUser = new User({
-      firstName,
-      lastName,
-      role: role || "user",
-      email: email.toLowerCase(),
-      profileURL,
-      userName,
-      password: hashedPassword,
-    });
+  firstName,
+  lastName,
+  role: role || "USER",
+  adminType: adminType || null,
+  email: email.toLowerCase(),
+  profileURL: profileURL || "",
+  userName,
+  password: hashedPassword,
+  collegeId,
+  department,
+  batchYear,
+  isVerified
+});
+
 
     await newUser.save();
 

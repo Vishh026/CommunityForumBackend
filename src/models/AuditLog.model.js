@@ -8,7 +8,7 @@ const auditLogSchema = new mongoose.Schema({
   },
   actorRole: {
     type: String,
-    enum: ["user", "admin", "ai"],
+    enum: ["USER", "ADMIN", "AI"],
     required: true,
   },
   action: {
@@ -58,9 +58,6 @@ auditLogSchema.index(
   { createdAt: 1 },
   { expireAfterSeconds: 60 * 60 * 24 * 365 } // 1 year
 );
-
-
-
 
 
 const AuditLog = mongoose.model("AuditLog", auditLogSchema);

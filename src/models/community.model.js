@@ -53,6 +53,9 @@ const communitySchema = new mongoose.Schema({
     index:true
   },
   blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  collegeId: { type: mongoose.Schema.Types.ObjectId, ref: "College" },
+  department: { type: String },
+  batchYear: { type: Number },
 });
 
 communitySchema.index({ members: 1, isPrivate: 1 });
